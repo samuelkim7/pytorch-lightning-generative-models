@@ -1,0 +1,10 @@
+version: "1"
+labels:
+  - label: "WIP"
+    title: "^WIP:.*"
+  - label: "feature"
+    branch: "^feature/.*"
+  - label: "bugfix"
+    branch: "^bugfix/.*"
+  - label: "hotfix"
+    branch: "^hotfix/.*"
