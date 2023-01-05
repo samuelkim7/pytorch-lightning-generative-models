@@ -24,7 +24,7 @@ class MNISTDataModule(pl.LightningDataModule):
             [
                 transforms.ToTensor(),
                 transforms.Normalize((self.mean,), (self.var,)),
-            ]
+            ],
         )
 
         self.dims = (1, 28, 28)

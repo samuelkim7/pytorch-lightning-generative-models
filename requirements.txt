@@ -4,6 +4,6 @@ isort==5.10.1
 jsonargparse==4.10.1
 numpy==1.24.1
 pre-commit>=2.20.0
+pytorch-lightning==1.6.4
 torch==1.13.1
 torchvision==0.14.1
-pytorch-lightning==1.6.4
