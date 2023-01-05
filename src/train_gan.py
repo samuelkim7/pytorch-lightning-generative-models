@@ -1,10 +1,12 @@
 import os
 from pathlib import Path
+
+import pytorch_lightning as pl
 import torch
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
+
 from datasets.mnist_datamodule import MNISTDataModule
 from models.gan import GAN
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
 def main():
