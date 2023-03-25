@@ -44,6 +44,7 @@ def train(cfg: DictConfig) -> None:
     )
     trainer = pl.Trainer(
         accelerator=cfg.trainer.accelerator,
+        devices=cfg.trainer.devices,
         max_epochs=cfg.trainer.max_epochs,
         callbacks=callbacks,
     )
