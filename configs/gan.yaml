@@ -1,0 +1,14 @@
+model:
+  batch_size: 64
+  g_lr: 0.003
+  d_lr: 0.0001
+  b1: 0.7
+  b2: 0.999
+
+data:
+  dataset: "MNIST"
+  data_dir: data
+  num_workers: 4
+
+trainer:
+  max_epochs: 100
