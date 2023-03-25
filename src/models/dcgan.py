@@ -17,25 +17,28 @@ class Generator(nn.Module):
         super().__init__()
         self.img_shape = img_shape
 
-        def block(in_feature, out_feature, normalize=True):
-            layers = [nn.Linear(in_feature, out_feature)]
-            if normalize:
-                layers.append(nn.BatchNorm1d(out_feature, 0.8))
-            layers.append(nn.LeakyReLU(0.2, inplace=True))
-            return layers
+        self.init_size = img_shape[1] // 4  # Initial size before upsampling
+        self.fc = nn.Linear(latent_dim, 128 * self.init_size**2)
 
-        self.model = nn.Sequential(
-            *block(latent_dim, 128, normalize=False),
-            *block(128, 256),
-            *block(256, 512),
-            *block(512, 1024),
-            nn.Linear(1024, int(np.prod(img_shape))),
+        self.conv_blocks = nn.Sequential(
+            nn.BatchNorm2d(128),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(128, 128, 3, stride=1, padding=1),
+            nn.BatchNorm2d(128, 0.8),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(128, 64, 3, stride=1, padding=1),
+            nn.BatchNorm2d(64, 0.8),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(64, img_shape[0], 3, stride=1, padding=1),
             nn.Tanh(),
         )
 
     def forward(self, z):
-        img = self.model(z)
-        img = img.view(img.size(0), *self.img_shape)
+        output = self.fc(z)
+        output = output.view(output.size(0), 128, self.init_size, self.init_size)
+        img = self.conv_blocks(output)
+
         return img
 
 
@@ -43,23 +46,37 @@ class Discriminator(nn.Module):
     def __init__(self, img_shape):
         super().__init__()
 
-        self.model = nn.Sequential(
-            nn.Linear(int(np.prod(img_shape)), 512),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(512, 256),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(256, 1),
+        def block(in_filters, out_filters, batch_norm=True):
+            layers = [
+                nn.Conv2d(in_filters, out_filters, 4, 2, 1, bias=False),
+                nn.LeakyReLU(0.2, inplace=True),
+            ]
+            if batch_norm:
+                layers.append(nn.BatchNorm2d(out_filters))
+            return layers
+
+        self.conv_blocks = nn.Sequential(
+            *block(img_shape[0], 16, batch_norm=False),
+            *block(16, 32),
+            *block(32, 64),
+            *block(64, 128),
+        )
+
+        output_size = img_shape[1] // 2**4
+        self.fc = nn.Sequential(
+            nn.Linear(128 * output_size**2, 1),
             nn.Sigmoid(),
         )
 
     def forward(self, img):
-        img_flat = img.view(img.size(0), -1)
-        validity = self.model(img_flat)
+        output = self.conv_blocks(img)
+        output = output.view(output.size(0), -1)
+        validity = self.fc(output)
 
         return validity
 
 
-class GAN(pl.LightningModule):
+class DCGAN(pl.LightningModule):
     def __init__(
         self,
         channels: int,
@@ -149,7 +166,7 @@ class GAN(pl.LightningModule):
         return [opt_g, opt_d], []
 
     def on_train_epoch_end(self):
-        z = self.validation_z.type_as(self.generator.model[0].weight)
+        z = self.validation_z.type_as(self.generator.fc[0].weight)
 
         # log sampled images
         sample_imgs = self(z)

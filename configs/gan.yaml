@@ -1,5 +1,6 @@
 model:
-  batch_size: 64
+  architecture: DCGAN
+  batch_size: 128
   g_lr: 0.003
   d_lr: 0.0001
   b1: 0.7
@@ -12,3 +13,4 @@ data:
 
 trainer:
   max_epochs: 100
+  accelerator: mps

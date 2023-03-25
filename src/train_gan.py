@@ -1,4 +1,3 @@
-# main.py
 from pathlib import Path
 
 import hydra
@@ -9,7 +8,7 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from datasets.celeba_datamodule import CelebADataModule
 from datasets.mnist_datamodule import MNISTDataModule
-from models.gan import GAN
+from models import DCGAN, GAN
 
 
 def train(cfg: DictConfig) -> None:
@@ -29,7 +28,13 @@ def train(cfg: DictConfig) -> None:
             num_workers=cfg.data.num_workers,
             batch_size=cfg.model.batch_size,
         )
-    model = GAN(
+
+    if cfg.model.architecture == "GAN":
+        model_architecture = GAN
+    elif cfg.model.architecture == "DCGAN":
+        model_architecture = DCGAN
+
+    model = model_architecture(
         *datamodule.dims,
         g_lr=cfg.model.g_lr,
         d_lr=cfg.model.d_lr,
@@ -38,8 +43,7 @@ def train(cfg: DictConfig) -> None:
         b2=cfg.model.b2,
     )
     trainer = pl.Trainer(
-        # accelerator="mps",
-        # gpus=1 if torch.backends.mps.is_available() else None,
+        accelerator=cfg.trainer.accelerator,
         max_epochs=cfg.trainer.max_epochs,
         callbacks=callbacks,
     )
