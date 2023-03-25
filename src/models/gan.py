@@ -133,12 +133,16 @@ class GAN(pl.LightningModule):
             return d_loss
 
     def configure_optimizers(self):
-        lr = self.hparams.lr
-        b1 = self.hparams.b1
-        b2 = self.hparams.b2
-
-        opt_g = torch.optim.Adam(self.generator.parameters(), lr=lr, betas=(b1, b2))
-        opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=lr, betas=(b1, b2))
+        opt_g = torch.optim.Adam(
+            self.generator.parameters(),
+            lr=self.hparams.g_lr,
+            betas=(self.hparams.b1, self.hparams.b2),
+        )
+        opt_d = torch.optim.Adam(
+            self.discriminator.parameters(),
+            lr=self.hparams.d_lr,
+            betas=(self.hparams.b1, self.hparams.b2),
+        )
         return [opt_g, opt_d], []
 
     def on_train_epoch_end(self):
