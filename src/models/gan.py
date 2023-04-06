@@ -62,27 +62,23 @@ class Discriminator(nn.Module):
 class GAN(pl.LightningModule):
     def __init__(
         self,
-        channels: int,
-        width: int,
-        height: int,
-        latent_dim: int = 100,
+        img_shape: Tuple[int, int, int],
+        latent_dim: int = 128,
         g_lr: float = 0.001,
         d_lr: float = 0.0002,
         b1: float = 0.5,
         b2: float = 0.999,
-        batch_size: int = 256,
         **kwargs,
     ):
         super().__init__()
         self.save_hyperparameters()
 
-        data_shape = (channels, width, height)
         self.generator = Generator(
             latent_dim=self.hparams.latent_dim,
-            img_shape=data_shape,
+            img_shape=img_shape,
         )
         self.discriminator = Discriminator(
-            img_shape=data_shape,
+            img_shape=img_shape,
         )
 
         self.validation_z = torch.randn(8, self.hparams.latent_dim)
