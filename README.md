@@ -4,6 +4,8 @@
 
 ### models
 - GAN
+- DCGAN
+- VAE
 
 
 ### datasets
@@ -13,3 +15,5 @@
 
 ### hydra
 - hydra core (1.3.2) is applied.
+- reference: https://github.com/ashleve/lightning-hydra-template
+- Check out the easy and concise way provided by hyrda to instatiate needed objects in train.py
