@@ -1,5 +1,5 @@
 model:
-  _target_: models.gan.GAN
+  _target_: models.dcgan.DCGAN
   latent_dim: 128
   g_lr: 0.003
   d_lr: 0.0001
